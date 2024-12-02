@@ -1,13 +1,11 @@
 package com.javaupskill.springdemo.controllers;
 
 import com.javaupskill.springdemo.dtos.Recipe;
-import com.javaupskill.springdemo.services.AsianRecipeService;
 import com.javaupskill.springdemo.services.RecipeService;
-import jakarta.annotation.PreDestroy;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -18,8 +16,8 @@ import java.util.List;
 //@Lazy
 public class RecipeController {
     RecipeService recipeService;
-    RecipeService recipeService2;
-    RecipeService americanRecipeService;
+    RecipeService customRecipeService;
+    RecipeService extraRecipeService;
 
 //    @PreDestroy
 //    public void cleanup() {
@@ -32,22 +30,25 @@ public class RecipeController {
      * Qualifier should have the name of the desired class starting with lower case
      *
      * @param recipeService
-     * @param americanRecipeService
+     * @param extraRecipeService
      */
     @Autowired
-    public RecipeController(RecipeService recipeService, RecipeService recipeService2,
-                            @Qualifier("americanRecipeService") RecipeService americanRecipeService) {
+    public RecipeController(RecipeService recipeService, @Qualifier("myCustomRecipeService") RecipeService customRecipeService,
+                            @Qualifier("americanRecipeService") RecipeService extraRecipeService) {
         System.out.println("controlled init");
         this.recipeService = recipeService;
-        this.recipeService2 = recipeService2;
-        this.americanRecipeService = americanRecipeService;
+        this.customRecipeService = customRecipeService;
+        this.extraRecipeService = extraRecipeService;
     }
 
     @GetMapping()
     public List<Recipe> getAllRecipes() {
-        System.out.println(recipeService);
-        System.out.println(americanRecipeService);
         return recipeService.getAllRecipes();
+    }
+
+    @GetMapping("/{id}")
+    public Recipe getRecipeById(@PathVariable int id) {
+        return recipeService.getRecipeById(id);
     }
 
 }

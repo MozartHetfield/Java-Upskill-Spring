@@ -1,30 +1,33 @@
 package com.javaupskill.springdemo.services;
 
 import com.javaupskill.springdemo.dtos.Recipe;
+import com.javaupskill.springdemo.dtos.RecipeType;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.beans.factory.config.ConfigurableBeanFactory;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.context.annotation.Primary;
-import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 //@Lazy
 @Primary
 //@Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
-public class AsianRecipeService implements RecipeService {
+public class RegularRecipeService implements RecipeService {
+
+    List<Recipe> recipes;
     @Value("${chef.name}")
     private String chefName;
 
     @Value("${chef.rating}")
     private int chefRating;
 
-    public AsianRecipeService() {
+    public RegularRecipeService() {
+        recipes = getAllRecipesMock();
         System.out.println("asian init");
     }
 
@@ -43,7 +46,18 @@ public class AsianRecipeService implements RecipeService {
 
     public List<Recipe> getAllRecipes() {
         System.out.println(chefName + " " + chefRating);
-        return getAllRecipesMock();
+        return recipes;
+    }
+
+    public Recipe getRecipeById(int id) {
+        Optional<Recipe> foundRecipe = recipes.stream().filter(recipe -> recipe.getId() == id).findFirst();
+
+        if (foundRecipe.isEmpty()) {
+            // TODO: exception handling
+            return null;
+        }
+
+        return foundRecipe.get();
     }
 
     /**
@@ -53,10 +67,10 @@ public class AsianRecipeService implements RecipeService {
      */
     public List<Recipe> getAllRecipesMock() {
         return Arrays.asList(
-                new Recipe("Recipe one", true, 10.0, 10),
-                new Recipe("Recipe two", false, 5.0, 13),
-                new Recipe("Recipe three", true, 4.0, 8),
-                new Recipe("Recipe four", false, 15.0, 3)
+                new Recipe(1,"Recipe one", true, 10.0, 10, RecipeType.AMERICAN),
+                new Recipe(2, "Recipe two", false, 5.0, 13, RecipeType.ASIAN),
+                new Recipe(3, "Recipe three", true, 4.0, 8, RecipeType.EUROPEAN),
+                new Recipe(4,"Recipe four", false, 15.0, 3, RecipeType.EUROPEAN)
         );
     }
 
