@@ -1,4 +1,4 @@
-package com.javaupskill.springdemo.dtos;
+package com.javaupskill.springdemo.entities;
 
 public enum RecipeType {
     INVALID(-1),

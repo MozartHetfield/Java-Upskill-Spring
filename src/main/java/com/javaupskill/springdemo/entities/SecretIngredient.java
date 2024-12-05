@@ -1,4 +1,4 @@
-package com.javaupskill.springdemo.dtos;
+package com.javaupskill.springdemo.entities;
 
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;

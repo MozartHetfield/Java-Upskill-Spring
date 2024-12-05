@@ -1,9 +1,8 @@
 package com.javaupskill.springdemo.controllers;
 
-import com.javaupskill.springdemo.dtos.Recipe;
+import com.javaupskill.springdemo.entities.Recipe;
 import com.javaupskill.springdemo.exceptions.ResponseException;
 import com.javaupskill.springdemo.services.RecipeService;
-import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -37,7 +36,7 @@ public class RecipeController {
 
     @GetMapping("/{id}")
     public ResponseEntity<Recipe> getRecipeById(@PathVariable int id) throws ResponseException {
-        Recipe recipe = recipeService.getRecipeById(id);
+        Recipe recipe = recipeService.verifyIfRecipeExistsAndReturnRecipe(id);
         return new ResponseEntity<>(recipe, createHttpStatusFromRecipe(recipe));
     }
 

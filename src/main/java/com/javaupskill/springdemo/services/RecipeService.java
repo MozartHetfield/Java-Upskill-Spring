@@ -1,21 +1,18 @@
 package com.javaupskill.springdemo.services;
 
-import com.javaupskill.springdemo.dtos.Recipe;
-import com.javaupskill.springdemo.dtos.RecipeType;
+import com.javaupskill.springdemo.entities.Recipe;
 import com.javaupskill.springdemo.exceptions.ResponseException;
+import com.javaupskill.springdemo.repositories.RecipeRepository;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
-import jakarta.validation.constraints.Min;
-import org.springframework.beans.factory.annotation.Value;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Primary;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 //@Lazy
@@ -23,21 +20,20 @@ import java.util.stream.Collectors;
 //@Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 public class RecipeService {
 
-    List<Recipe> recipes;
-    @Value("${chef.name}")
-    private String chefName;
 
-    @Value("${chef.rating}")
-    private int chefRating;
+    RecipeRepository recipeRepository;
+    Logger logger;
 
-    public RecipeService() {
-        recipes = getAllRecipesMock();
-        System.out.println("asian init");
+    @Autowired
+    public RecipeService(RecipeRepository recipeRepository) {
+        this.recipeRepository = recipeRepository;
+        this.logger = LoggerFactory.getLogger(RecipeService.class);
+        System.out.println("service init");
     }
 
     @PostConstruct
     public void setup() {
-        System.out.println("asian setup");
+        System.out.println("service setup");
     }
 
     /**
@@ -45,36 +41,32 @@ public class RecipeService {
      */
     @PreDestroy
     public void cleanup() {
-        System.out.println("asian cleanup");
+        System.out.println("service cleanup");
     }
 
     public List<Recipe> getAllRecipes() {
-        System.out.println(chefName + " " + chefRating);
-        return recipes;
+        // TODO: Recipe should be the model that deals with the DB interaction
+        // we should convert Recipe into a RecipeDto
+        // and send this RecipeDto to client
+        return recipeRepository.getAllRecipes();
     }
 
-    public Recipe getRecipeById(int id) throws ResponseException {
-        Optional<Recipe> foundRecipe = recipes.stream().filter(recipe -> recipe.getId() == id).findFirst();
+    private void logSomething() {
+        logger.trace("trace");
+        logger.debug("debug");
+        logger.info("info");
+        logger.warn("warn");
+        logger.error("error");
+    }
 
-        if (foundRecipe.isEmpty()) {
+    public Recipe verifyIfRecipeExistsAndReturnRecipe(int id) throws ResponseException {
+        Recipe recipe = recipeRepository.getRecipeById(id);
+
+        if (recipe == null) {
             throw new ResponseException(String.format("Recipe with ID %d was not found", id), HttpStatus.NOT_FOUND);
         }
 
-        return foundRecipe.get();
-    }
-
-    /**
-     * this should be in DAO
-     *
-     * @return
-     */
-    public List<Recipe> getAllRecipesMock() {
-        return new ArrayList<>(Arrays.asList(
-                new Recipe(1,"Recipe one", true, 10.0, 10, RecipeType.AMERICAN),
-                new Recipe(2, "Recipe two", false, 5.0, 13, RecipeType.ASIAN),
-                new Recipe(3, "Recipe three", true, 4.0, 8, RecipeType.EUROPEAN),
-                new Recipe(4,"Recipe four", false, 15.0, 3, RecipeType.EUROPEAN)
-        ));
+        return recipe;
     }
 
     @Override
@@ -83,39 +75,28 @@ public class RecipeService {
     }
 
     public List<Recipe> getFilteredRecipes(String name, boolean isVegan) {
-        return recipes.stream()
-                .filter(recipe -> {
-                    boolean isNameMatch = true;
-                    if (name != null) {
-                        isNameMatch = recipe.getName().toLowerCase().contains(name.toLowerCase());
-                    }
-                    boolean isVeganMatch = recipe.isVegan() == isVegan;
-                    return isVeganMatch && isNameMatch;
-                })
-                .collect(Collectors.toList());
+        return recipeRepository.getRecipesByFilters(name, isVegan);
     }
 
     public Recipe addRecipe(Recipe recipe) throws ResponseException {
-        boolean isRecipeAdded = recipes.add(recipe);
-
-        if (!isRecipeAdded) {
-            throw new ResponseException(String.format("Recipe with ID %d was not added", recipe.getId()), HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-
+        recipeRepository.saveRecipe(recipe);
         return recipe;
     }
 
     public Recipe editRecipe(int id, Recipe recipe) throws ResponseException {
-        Recipe existingRecipe = getRecipeById(id);
+        verifyIfRecipeExistsAndReturnRecipe(id);
 
-        // TODO: set all the fields to the new values
-        existingRecipe.setName(recipe.getName());
+        recipe.setId(id);
+        return recipeRepository.updateRecipe(recipe);
+    }
 
-        return recipe;
+    //Experimental
+    public void editRecipesByFields() throws ResponseException {
+        recipeRepository.updateRecipesByFields("test", true);
     }
 
     public void removeRecipe(int id) throws ResponseException {
-        Recipe recipe = getRecipeById(id);
-        recipes.remove(recipe);
+        Recipe recipe = verifyIfRecipeExistsAndReturnRecipe(id);
+        recipeRepository.removeRecipe(recipe);
     }
 }

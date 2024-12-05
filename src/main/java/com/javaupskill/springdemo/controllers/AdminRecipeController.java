@@ -1,12 +1,11 @@
 package com.javaupskill.springdemo.controllers;
 
-import com.javaupskill.springdemo.dtos.Recipe;
+import com.javaupskill.springdemo.entities.Recipe;
 import com.javaupskill.springdemo.exceptions.ResponseException;
 import com.javaupskill.springdemo.services.RecipeService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.actuate.autoconfigure.observation.ObservationProperties;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
