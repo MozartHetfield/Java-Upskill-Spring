@@ -1,5 +1,6 @@
 package com.javaupskill.springdemo.entities;
 
+import com.javaupskill.springdemo.converters.RecipeTypeConverter;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
@@ -45,6 +46,7 @@ public class Recipe {
     }
 
     @NotNull
+    @Convert(converter = RecipeTypeConverter.class)
     private RecipeType recipeType;
 
     @Transient
